@@ -8,6 +8,12 @@ on:
       - ".github/workflows/build-android-artifacts.yml"
   workflow_dispatch:
 
+env:
+  ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+  ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+  ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+  ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
 jobs:
   debug-apk:
     name: Build Debug APK
@@ -80,7 +86,7 @@ jobs:
   signed-release-aab:
     name: Build Signed Release AAB
     runs-on: ubuntu-latest
-    if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+    if: ${{ env.ANDROID_KEYSTORE_BASE64 != '' && env.ANDROID_KEYSTORE_PASSWORD != '' && env.ANDROID_KEY_ALIAS != '' && env.ANDROID_KEY_PASSWORD != '' }}
     defaults:
       run:
         working-directory: android-app
@@ -105,14 +111,11 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/release-keystore.jks
+          echo "${{ env.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/release-keystore.jks
 
       - name: Build Signed Release AAB
         env:
           ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release-keystore.jks
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: gradle :app:bundleRelease
 
       - name: Upload Signed Release AAB
