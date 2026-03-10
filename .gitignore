@@ -2,6 +2,10 @@ node_modules/
 backend/node_modules/
 backend/.env
 backend/data/*.backup.json
+backend/*.out.log
+backend/*.err.log
+web-admin/*.out.log
+web-admin/*.err.log
 
 android-app/.gradle/
 android-app/local.properties
