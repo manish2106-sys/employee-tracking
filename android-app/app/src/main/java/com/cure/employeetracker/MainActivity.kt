@@ -72,7 +72,7 @@ private fun EmployeeTrackerScreen() {
     val locationProvider = remember { LocationProvider(context.applicationContext) }
 
     var employeeCode by rememberSaveable { mutableStateOf("") }
-    var apiBaseUrl by rememberSaveable { mutableStateOf("http://10.0.2.2:4000/api") }
+    var apiBaseUrl by rememberSaveable { mutableStateOf("https://manish2106-employee-tracking-api.onrender.com/api") }
     var latestLocation by rememberSaveable { mutableStateOf("No location captured yet.") }
     var statusMessage by rememberSaveable { mutableStateOf("Ready for check-in/check-out.") }
     var inFlight by remember { mutableStateOf(false) }
@@ -169,7 +169,7 @@ private fun EmployeeTrackerScreen() {
             value = apiBaseUrl,
             onValueChange = { apiBaseUrl = it },
             label = { Text("Backend Base URL") },
-            placeholder = { Text("http://10.0.2.2:4000/api") },
+            placeholder = { Text("https://manish2106-employee-tracking-api.onrender.com/api") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -288,3 +288,4 @@ private fun parseHttpError(error: HttpException): String {
 
     return "Request failed with code ${error.code()}"
 }
+

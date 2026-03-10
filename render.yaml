@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: manish2106-employee-tracking-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: manish2106-employee-tracking-admin
+          property: host
+
+  - type: web
+    name: manish2106-employee-tracking-admin
+    runtime: static
+    plan: free
+    rootDir: web-admin
+    buildCommand: >
+      node -e "const fs=require('fs');let api=process.env.API_BASE_URL||'';if(api&&!/^https?:\\/\\//.test(api)){api='https://'+api;}if(api.endsWith('/'))api=api.slice(0,-1);if(api&&!api.endsWith('/api'))api+='/api';fs.writeFileSync('runtime-config.js',`window.RUNTIME_CONFIG = { API_BASE_URL: \"${api}\" };\\n`);"
+    staticPublishPath: .
+    envVars:
+      - key: API_BASE_URL
+        fromService:
+          type: web
+          name: manish2106-employee-tracking-api
+          property: host

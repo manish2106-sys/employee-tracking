@@ -18,8 +18,24 @@ import {
 ensureSeedAdmin();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.set("trust proxy", 1);
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (config.corsOrigins.includes("*") || config.corsOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Origin not allowed by CORS policy."));
+  }
+};
+
+app.use(cors(corsOptions));
+app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_req, res) => {
   res.json({
@@ -119,10 +135,14 @@ app.get("/api/admin/attendance", (req, res) => {
 });
 
 app.use((err, _req, res, _next) => {
+  if (String(err?.message ?? "").includes("CORS")) {
+    return res.status(403).json({ message: err.message });
+  }
+
   console.error(err);
   return res.status(500).json({ message: "Internal server error." });
 });
 
 app.listen(config.port, () => {
-  console.log(`Employee Tracker backend running on http://localhost:${config.port}`);
+  console.log(`Employee Tracker backend running on port ${config.port}`);
 });
