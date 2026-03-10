@@ -23,8 +23,7 @@ services:
     name: manish2106-employee-tracking-admin
     runtime: static
     rootDir: web-admin
-    buildCommand: >
-      node -e "const fs=require('fs');let api=process.env.API_BASE_URL||'';if(api&&!/^https?:\\/\\//.test(api)){api='https://'+api;}if(api.endsWith('/'))api=api.slice(0,-1);if(api&&!api.endsWith('/api'))api+='/api';fs.writeFileSync('runtime-config.js',`window.RUNTIME_CONFIG = { API_BASE_URL: \"${api}\" };\\n`);"
+    buildCommand: node build-runtime-config.js
     staticPublishPath: .
     envVars:
       - key: API_BASE_URL
