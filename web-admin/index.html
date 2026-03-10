@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Tracker Admin</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="page-header">
+        <h1>Employee Tracking Dashboard</h1>
+        <p>Manage employees and monitor real-time attendance sessions.</p>
+      </header>
+
+      <section id="login-section" class="card auth-card">
+        <h2>Admin Login</h2>
+        <form id="login-form" class="grid-form">
+          <label>
+            API Base URL
+            <input id="api-base-url" type="url" value="http://localhost:4000/api" required />
+          </label>
+          <label>
+            Username
+            <input id="username" type="text" value="admin" required />
+          </label>
+          <label>
+            Password
+            <input id="password" type="password" value="Admin@123" required />
+          </label>
+          <button type="submit">Sign In</button>
+        </form>
+      </section>
+
+      <section id="dashboard-section" class="hidden">
+        <div class="toolbar card">
+          <div>
+            <h2>Admin Panel</h2>
+            <p id="signed-in-admin">Signed in</p>
+          </div>
+          <div class="toolbar-actions">
+            <button id="refresh-all" class="secondary">Refresh Data</button>
+            <button id="logout" class="danger">Logout</button>
+          </div>
+        </div>
+
+        <section class="summary-grid">
+          <article class="summary-card">
+            <h3>Total Employees</h3>
+            <p id="summary-total-employees">0</p>
+          </article>
+          <article class="summary-card">
+            <h3>Active Employees</h3>
+            <p id="summary-active-employees">0</p>
+          </article>
+          <article class="summary-card">
+            <h3>Checked In Now</h3>
+            <p id="summary-checked-in">0</p>
+          </article>
+          <article class="summary-card">
+            <h3>Total Sessions</h3>
+            <p id="summary-total-sessions">0</p>
+          </article>
+        </section>
+
+        <section class="card">
+          <h2>Create Employee</h2>
+          <form id="employee-form" class="grid-form two-columns">
+            <label>
+              Employee ID
+              <input name="employeeCode" type="text" required />
+            </label>
+            <label>
+              Full Name
+              <input name="fullName" type="text" required />
+            </label>
+            <label>
+              Department
+              <input name="department" type="text" />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" />
+            </label>
+            <label>
+              Phone
+              <input name="phone" type="text" />
+            </label>
+            <label class="checkbox-label">
+              <input name="isActive" type="checkbox" checked />
+              Active employee
+            </label>
+            <button type="submit">Add Employee</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Employees</h2>
+          <div class="table-wrapper">
+            <table id="employee-table">
+              <thead>
+                <tr>
+                  <th>Employee ID</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <h2>Attendance Sessions</h2>
+            <form id="attendance-filter" class="filters">
+              <label>
+                From
+                <input name="from" type="datetime-local" />
+              </label>
+              <label>
+                To
+                <input name="to" type="datetime-local" />
+              </label>
+              <button type="submit" class="secondary">Apply</button>
+              <button type="button" id="clear-filters" class="ghost">Clear</button>
+            </form>
+          </div>
+          <div class="table-wrapper">
+            <table id="attendance-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Login Time</th>
+                  <th>Logout Time</th>
+                  <th>Login Location</th>
+                  <th>Logout Location</th>
+                  <th>Login Device</th>
+                  <th>Logout Device</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <div id="status" class="status"></div>
+    </main>
+
+    <script src="./runtime-config.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
+
+

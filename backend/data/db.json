@@ -1,0 +1,36 @@
+{
+  "admins": [
+    {
+      "id": "39a2cd11-edf2-43fc-b6fb-1687fb84b99a",
+      "username": "admin",
+      "name": "System Admin",
+      "passwordHash": "c574b5bd2adeb25ca6e3e4cd0c8ec5b7:7d5cfb797d909e69eef17c097fd98bedc207ea824e1476b14138ab8f89a483f81a447322c333f1e9d946e27bcf628c0b9a46f8300b67b22b22461e60f72091a9",
+      "createdAt": "2026-03-10T04:39:32.402Z"
+    }
+  ],
+  "employees": [
+    {
+      "id": "c695b5ef-cdb1-4cdd-9bfa-ebe9c790801c",
+      "employeeCode": "001",
+      "fullName": "Manish Anand",
+      "email": "manish@aadhaarassociation.org",
+      "phone": "7260828588",
+      "department": "stem",
+      "isActive": true,
+      "createdAt": "2026-03-10T05:06:43.181Z",
+      "updatedAt": "2026-03-10T05:06:43.181Z"
+    },
+    {
+      "id": "db27f929-47bf-419e-8727-164dce012ffd",
+      "employeeCode": "002",
+      "fullName": "Akarsh Pandey",
+      "email": "akarsh@aadhaarassociation.org",
+      "phone": "07260828588",
+      "department": "stem",
+      "isActive": true,
+      "createdAt": "2026-03-10T05:08:35.236Z",
+      "updatedAt": "2026-03-10T05:08:35.236Z"
+    }
+  ],
+  "attendanceSessions": []
+}
