@@ -17,10 +17,7 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: CORS_ORIGINS
-        fromService:
-          type: web
-          name: manish2106-employee-tracking-admin
-          property: host
+        value: https://manish2106-employee-tracking-admin.onrender.com,https://manish2106-sys.github.io
 
   - type: web
     name: manish2106-employee-tracking-admin
