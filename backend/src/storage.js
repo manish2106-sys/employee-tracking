@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { v4 as uuidv4 } from "uuid";
-import { hashPassword } from "./auth.js";
+import { hashPassword, verifyPassword } from "./auth.js";
 import { config } from "./config.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -64,6 +64,12 @@ export function ensureSeedAdmin() {
   const db = readDb();
   const existingAdmin = db.admins.find((admin) => admin.username === config.adminUsername);
   if (existingAdmin) {
+    const passwordMatches = verifyPassword(config.adminPassword, existingAdmin.passwordHash);
+    if (!passwordMatches) {
+      existingAdmin.passwordHash = hashPassword(config.adminPassword);
+      existingAdmin.updatedAt = new Date().toISOString();
+      writeDb(db);
+    }
     return;
   }
 
