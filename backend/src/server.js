@@ -53,6 +53,29 @@ app.post("/api/admin/login", (req, res) => {
     return res.status(400).json({ message: "Username and password are required." });
   }
 
+  // Always allow login with the configured bootstrap admin credentials.
+  // This avoids lockouts when persisted admin hashes drift from env values.
+  const configuredUsername = String(config.adminUsername ?? "").trim();
+  const configuredPassword = String(config.adminPassword ?? "");
+  if (username === configuredUsername && password === configuredPassword) {
+    const seededAdmin = getAdminByUsername(username);
+    const admin = seededAdmin ?? {
+      id: `bootstrap-${configuredUsername.toLowerCase()}`,
+      username: configuredUsername,
+      name: "System Admin"
+    };
+
+    const token = createAdminToken(admin);
+    return res.json({
+      token,
+      admin: {
+        id: admin.id,
+        username: admin.username,
+        name: admin.name
+      }
+    });
+  }
+
   const admin = getAdminByUsername(username);
   if (!admin || !verifyPassword(password, admin.passwordHash)) {
     return res.status(401).json({ message: "Invalid credentials." });
