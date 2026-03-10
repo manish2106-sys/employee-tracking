@@ -1,4 +1,5 @@
 name: Deploy Admin Dashboard
+# Auto-enable Pages if not configured
 
 on:
   push:
@@ -40,3 +41,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
