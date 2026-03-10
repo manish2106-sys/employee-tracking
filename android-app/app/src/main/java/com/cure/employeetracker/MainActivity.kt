@@ -41,10 +41,16 @@ import androidx.core.content.ContextCompat
 import com.cure.employeetracker.api.AttendanceRequest
 import com.cure.employeetracker.api.RetrofitProvider
 import com.cure.employeetracker.location.LocationProvider
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
+
+private const val PRODUCTION_API_BASE_URL = "https://manish2106-employee-tracking-api.onrender.com/api"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,7 +78,7 @@ private fun EmployeeTrackerScreen() {
     val locationProvider = remember { LocationProvider(context.applicationContext) }
 
     var employeeCode by rememberSaveable { mutableStateOf("") }
-    var apiBaseUrl by rememberSaveable { mutableStateOf("https://manish2106-employee-tracking-api.onrender.com/api") }
+    var apiBaseUrl by rememberSaveable { mutableStateOf(PRODUCTION_API_BASE_URL) }
     var latestLocation by rememberSaveable { mutableStateOf("No location captured yet.") }
     var statusMessage by rememberSaveable { mutableStateOf("Ready for check-in/check-out.") }
     var inFlight by remember { mutableStateOf(false) }
@@ -128,17 +134,19 @@ private fun EmployeeTrackerScreen() {
             )
 
             try {
-                val api = RetrofitProvider.create(normalizeApiBaseUrl(apiBaseUrl))
-                val response = when (action) {
-                    AttendanceAction.CHECK_IN -> api.checkIn(request)
-                    AttendanceAction.CHECK_OUT -> api.checkOut(request)
+                val normalizedBaseUrl = normalizeApiBaseUrl(apiBaseUrl)
+                if (apiBaseUrl != normalizedBaseUrl) {
+                    apiBaseUrl = normalizedBaseUrl.removeSuffix("/")
                 }
+
+                val api = RetrofitProvider.create(normalizedBaseUrl)
+                val response = executeAttendanceWithRetry(action, request, api)
 
                 statusMessage = response.message
             } catch (httpError: HttpException) {
                 statusMessage = parseHttpError(httpError)
             } catch (ioError: IOException) {
-                statusMessage = "Network error: ${ioError.message ?: "Unable to connect."}"
+                statusMessage = buildNetworkErrorMessage(ioError)
             } catch (unexpected: Exception) {
                 statusMessage = "Unexpected error: ${unexpected.message ?: "Try again."}"
             } finally {
@@ -169,7 +177,7 @@ private fun EmployeeTrackerScreen() {
             value = apiBaseUrl,
             onValueChange = { apiBaseUrl = it },
             label = { Text("Backend Base URL") },
-            placeholder = { Text("https://manish2106-employee-tracking-api.onrender.com/api") },
+            placeholder = { Text(PRODUCTION_API_BASE_URL) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -264,7 +272,20 @@ private fun buildDeviceName(): String {
 }
 
 private fun normalizeApiBaseUrl(input: String): String {
-    val trimmed = input.trim().removeSuffix("/")
+    val raw = input.trim()
+    val withFallback = if (raw.isBlank()) PRODUCTION_API_BASE_URL else raw
+    val withScheme = if (withFallback.startsWith("http://") || withFallback.startsWith("https://")) {
+        withFallback
+    } else {
+        "https://$withFallback"
+    }
+
+    val trimmed = withScheme.removeSuffix("/")
+
+    if (isLocalAddress(trimmed)) {
+        return "$PRODUCTION_API_BASE_URL/"
+    }
+
     require(trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
         "Base URL must start with http:// or https://"
     }
@@ -273,6 +294,42 @@ private fun normalizeApiBaseUrl(input: String): String {
         "$trimmed/"
     } else {
         "$trimmed/api/"
+    }
+}
+
+private fun isLocalAddress(url: String): Boolean {
+    val lowered = url.lowercase()
+    return lowered.contains("://localhost") ||
+        lowered.contains("://127.0.0.1") ||
+        lowered.contains("://0.0.0.0")
+}
+
+private suspend fun executeAttendanceWithRetry(
+    action: AttendanceAction,
+    request: AttendanceRequest,
+    api: com.cure.employeetracker.api.EmployeeTrackerApi
+): com.cure.employeetracker.api.AttendanceApiResponse {
+    try {
+        return when (action) {
+            AttendanceAction.CHECK_IN -> api.checkIn(request)
+            AttendanceAction.CHECK_OUT -> api.checkOut(request)
+        }
+    } catch (firstNetworkError: IOException) {
+        // Render services may cold-start briefly; retry once automatically.
+        delay(1200)
+        return when (action) {
+            AttendanceAction.CHECK_IN -> api.checkIn(request)
+            AttendanceAction.CHECK_OUT -> api.checkOut(request)
+        }
+    }
+}
+
+private fun buildNetworkErrorMessage(error: IOException): String {
+    return when (error) {
+        is UnknownHostException -> "Network error: cannot resolve server. Check internet connection."
+        is SocketTimeoutException -> "Network error: server timeout. Please retry in a few seconds."
+        is SSLHandshakeException -> "Network error: secure connection failed. Check phone date/time settings."
+        else -> "Network error: ${error.message ?: "Unable to connect."}"
     }
 }
 
