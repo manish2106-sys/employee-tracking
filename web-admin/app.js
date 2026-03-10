@@ -1,9 +1,33 @@
 const runtimeApiBaseUrl = String(window.RUNTIME_CONFIG?.API_BASE_URL ?? "").trim();
-const defaultApiBaseUrl = (
-  localStorage.getItem("apiBaseUrl") ||
-  runtimeApiBaseUrl ||
-  "http://localhost:4000/api"
-).replace(/\/$/, "");
+const storedApiBaseUrl = String(localStorage.getItem("apiBaseUrl") ?? "").trim();
+
+function normalizeBaseUrl(url) {
+  return String(url ?? "").trim().replace(/\/$/, "");
+}
+
+function isLocalhostUrl(url) {
+  if (!url) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(url);
+    return ["localhost", "127.0.0.1", "0.0.0.0"].includes(parsed.hostname);
+  } catch {
+    return /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?/i.test(url);
+  }
+}
+
+const defaultApiBaseUrl = (() => {
+  const runtime = normalizeBaseUrl(runtimeApiBaseUrl);
+  const stored = normalizeBaseUrl(storedApiBaseUrl);
+
+  if (runtime && (!stored || isLocalhostUrl(stored))) {
+    return runtime;
+  }
+
+  return stored || runtime || "http://localhost:4000/api";
+})();
 
 const state = {
   apiBaseUrl: defaultApiBaseUrl,
@@ -15,6 +39,10 @@ const state = {
     to: ""
   }
 };
+
+if (state.apiBaseUrl && state.apiBaseUrl !== storedApiBaseUrl) {
+  localStorage.setItem("apiBaseUrl", state.apiBaseUrl);
+}
 
 const refs = {
   loginSection: document.querySelector("#login-section"),
