@@ -2,6 +2,16 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+function getEnvValue(key, fallback) {
+  const value = process.env[key];
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : fallback;
+}
+
 function parseCorsOrigins(rawValue) {
   const raw = String(rawValue ?? "*").trim();
   if (!raw || raw === "*") {
@@ -29,9 +39,9 @@ function parseCorsOrigins(rawValue) {
 }
 
 export const config = {
-  port: Number.parseInt(process.env.PORT ?? "4000", 10),
-  jwtSecret: process.env.JWT_SECRET ?? "dev-secret-change-me",
-  adminUsername: process.env.ADMIN_USERNAME ?? "admin",
-  adminPassword: process.env.ADMIN_PASSWORD ?? "Admin@123",
+  port: Number.parseInt(getEnvValue("PORT", "4000"), 10),
+  jwtSecret: getEnvValue("JWT_SECRET", "dev-secret-change-me"),
+  adminUsername: getEnvValue("ADMIN_USERNAME", "admin"),
+  adminPassword: getEnvValue("ADMIN_PASSWORD", "Admin@123"),
   corsOrigins: parseCorsOrigins(process.env.CORS_ORIGINS)
 };
