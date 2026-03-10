@@ -18,16 +18,3 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: https://manish2106-employee-tracking-admin.onrender.com,https://manish2106-sys.github.io
-
-  - type: web
-    name: manish2106-employee-tracking-admin
-    runtime: static
-    rootDir: web-admin
-    buildCommand: node build-runtime-config.js
-    staticPublishPath: .
-    envVars:
-      - key: API_BASE_URL
-        fromService:
-          type: web
-          name: manish2106-employee-tracking-api
-          property: host
